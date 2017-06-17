@@ -4,8 +4,7 @@
 - robocar42:
   * camera.py
     - init
-    - display
-    - save
+    - get
     - list
   * car.py
     - init
@@ -20,4 +19,23 @@
     - models
     - train
     - generators
- 
+    - split
+  * image.py
+    - init
+      + list
+      + dims
+    - disp
+    - save
+  * preprocess.py
+    - check_duplicate
+    - augment
+    - interpolate
+  * util.py
+    - view_image
+    - quick_label
+    - occlusion_map
+    - stitching
+    - error_log
+    - progress_bar
+- script
+  **** some command line scripts ****
