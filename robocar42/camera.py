@@ -8,7 +8,33 @@ import numpy as np
 
 import config
 
-class Camera(object):
+class CameraCore(object):
+    '''
+    Core Camera object class
+    '''
+    def __init__(self, name, res=(320, 240)):
+        self.name = name
+        self.image = np.zeroes(res[1], res[0], 3)
+        self.shape = (res[0], res[1], 3)
+
+    def get(self):
+        return self.image
+
+    def update(self):
+        pass
+
+    def start(self):
+        '''
+        Starts the camera background thread for capturing frames
+        '''
+        t = Thread(target=self.update)
+        t.daemon = True
+        t.start()
+        time.sleep(1)
+        return self
+
+
+class Camera(CameraCore):
     '''
     Camera object class.
     '''
@@ -54,14 +80,10 @@ class Camera(object):
         self.recording = True
         self.start()
 
-    def start(self):
-        t = Thread(target=self.update)
-        t.daemon = True
-        t.start()
-        time.sleep(1)
-        return self
-
     def stop(self):
+        '''
+        Closes file descriptor and terminates the ffmpeg program
+        '''
         self._w.close()
         self._stderr.close()
         if self.ffmpeg:
@@ -70,7 +92,7 @@ class Camera(object):
 
     def update(self):
         '''
-        Captures the current frame of the camera and return the image file
+        Captures the current frame of the camera and save the current frame
         '''
         while True:
             raw_image = self._r.read(

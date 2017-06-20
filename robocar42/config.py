@@ -70,4 +70,5 @@ def display_parser_config(config_name):
                     image.getint('doshapeY'))
     cfg['sdshape'] = (image.getint('sdshapeX'),
                     image.getint('sdshapeY'))
+    
     return cfg

@@ -22,8 +22,8 @@ class TestCar(unittest.TestCase):
             '/m' + car_conf['speed'] +
             '/lf' + str(75)
         )
-        print ("Car class output: %s" % self.car.drive([1, 250, -1, 75]))
-        print ("Hardcoded output: %s" % cmd)
+        print("Car class output: %s" % self.car.drive([1, 250, -1, 75]))
+        print("Hardcoded output: %s" % cmd)
         assert self.car.drive([1, 250, -1, 75]) == cmd
 
     def test_drive_2(self):
@@ -35,8 +35,8 @@ class TestCar(unittest.TestCase):
             '/m' + str(100) +
             '/rt' + str(100)
         )
-        print ("Car class output: %s" % self.car.drive([-1, 100, 1, 100]))
-        print ("Hardcoded output: %s" % cmd)
+        print("Car class output: %s" % self.car.drive([-1, 100, 1, 100]))
+        print("Hardcoded output: %s" % cmd)
         assert self.car.drive([-1, 250, 1, 100]) == cmd
 
     def test_drive_3(self):
@@ -48,8 +48,8 @@ class TestCar(unittest.TestCase):
             '/m' + car_conf['speed'] +
             '/st' + car_conf['straight']
         )
-        print ("Car class output: %s" % self.car.drive([1, 250, 0, 100]))
-        print ("Hardcoded output: %s" % cmd)
+        print("Car class output: %s" % self.car.drive([1, 250, 0, 100]))
+        print("Hardcoded output: %s" % cmd)
         assert self.car.drive([1, 250, -1, 100]) == cmd
 
     def test_drive_4(self):
@@ -61,9 +61,9 @@ class TestCar(unittest.TestCase):
             '/m' + car_conf['speed'] +
             '/lf' + str(100)
         )
-        print ("Car class output: %s" % self.car.drive([1, 250, -1, 100]))
-        print ("Hardcoded output: %s" % cmd)
+        print("Car class output: %s" % self.car.drive([1, 250, -1, 100]))
+        print("Hardcoded output: %s" % cmd)
         assert self.car.drive([1, 250, -1, 100]) == cmd
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
