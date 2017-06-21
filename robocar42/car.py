@@ -51,3 +51,6 @@ class Car(object):
             return cmd
         except urllib2.URLError:
             return None
+
+        def start(self):
+            self.drive([0, 0, 0, 0])
