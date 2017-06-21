@@ -101,7 +101,7 @@ class Camera(CameraCore):
                 * self.shape[2]
             )
             image = np.fromstring(raw_image, dtype='uint8')
-            image = image.reshape((res[1], res[0], res[3]))
+            image = image.reshape((self.shape[1], self.shape[0], self.shape[3]))
             image = np.swapaxes(image, 0, 1)
             self.image = image
             if not self.recording:

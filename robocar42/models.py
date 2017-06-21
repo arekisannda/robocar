@@ -6,7 +6,6 @@ from keras.preprocessing.image import img_to_array, load_img
 from keras.preprocessing.image import flip_axis, random_shift
 from keras.utils import to_categorical
 
-from google.cloud import bigquery
 
 import config
 from camera import Camera
@@ -37,38 +36,3 @@ def model(load, shape, tr_model=None):
         metrics=['accuracy']
     )
     return model
-
-if __name__ == '__main__':
-    bigquery_client = bigquery.Client()
-
-    dataset_name = 'test_set'
-    dataset = bigquery_client.dataset(dataset_name)
-
-    if not dataset.exists():
-        print('Data {} does not exist.'.format(dataset_name))
-        exit(0)
-
-    table = dataset.table('test_table')
-
-    right = load_img('right.bmp', target_size=(320,240))
-    left = load_img('left.bmp', target_size=(320,240))
-    import base64
-    import cStringIO
-
-    buffer = cStringIO.StringIO()
-    right.save(buffer, format="BMP")
-    rt_img_str = base64.b64encode(buffer.getvalue())
-    left.save(buffer, format="BMP")
-    lf_img_str = base64.b64encode(buffer.getvalue())
-    info = (
-        'test',
-        0,
-        rt_img_str,
-        lf_img_str,
-        0,
-        'hello'
-    )
-    table.reload()
-    error = table.insert_data([info])
-    if error:
-        print("error")

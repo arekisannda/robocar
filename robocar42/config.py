@@ -37,11 +37,11 @@ def vehicle_parser_config(config_name):
     cfg = {}
     vehicle = config['vehicle']
     cfg['car_url'] = vehicle.get('url')
-    cfg['straight'] = vehicle.get('straight')
-    cfg['left'] = vehicle.get('max_left')
-    cfg['right'] = vehicle.get('max_right')
-    cfg['exp'] = vehicle.get('exp')
-    cfg['speed'] = vehicle.get('speed')
+    cfg['straight'] = vehicle.getint('straight')
+    cfg['left'] = vehicle.getint('max_left')
+    cfg['right'] = vehicle.getint('max_right')
+    cfg['exp'] = vehicle.getint('exp')
+    cfg['speed'] = vehicle.getint('speed')
     return cfg
 
 def camera_parser_config(config_name):
