@@ -1,3 +1,8 @@
+'''
+This module describes the Car class, which contains the information required
+to move the car.
+'''
+
 import urllib2
 
 class Car(object):
@@ -38,7 +43,7 @@ class Car(object):
         if req[2] == 0:
             angle = str(self.straight)
         elif (req[3] < min(self.left, self.right) or
-            req[3] > max(self.left, self.right)):
+              req[3] > max(self.left, self.right)):
             if req[2] == -1:
                 angle = str(self.left)
             elif req[2] == 1:
@@ -47,10 +52,15 @@ class Car(object):
             angle = str(req[3])
         cmd = 'http://' + self.url + direct + spd + steer + angle
         try:
-            urllib2.urlopen(cmd, timeout = 2)
+            urllib2.urlopen(cmd, timeout=2)
             return cmd
         except urllib2.URLError:
             return None
 
-        def start(self):
-            self.drive([0, 0, 0, 0])
+    def start(self):
+        '''
+        Pings the car to verify that it works
+        '''
+        if self.drive([0, 0, 0, 0]):
+            return True
+        return False

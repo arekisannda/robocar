@@ -17,12 +17,12 @@ class TestCar(unittest.TestCase):
         car_conf = config.vehicle_parser_config('vehicle.ini')
         cmd = (
             'http://' +
-            '/fwd' +
             str(car_conf['car_url']) +
+            '/fwd' +
             '/m' + str(car_conf['speed']) +
             '/lf' + str(75)
         )
-        print("Car class output: %s" % self.car.drive([1, 250, -1, 120]))
+        print("Car class output: %s" % self.car.drive([1, 250, -1, 75]))
         print("Hardcoded output: %s" % cmd)
         assert self.car.drive([1, 250, -1, 75]) == cmd
 
@@ -30,34 +30,34 @@ class TestCar(unittest.TestCase):
         car_conf = config.vehicle_parser_config('vehicle.ini')
         cmd = (
             'http://' +
-            '/rev' +
             str(car_conf['car_url']) +
+            '/rev' +
             '/m' + str(100) +
             '/rt' + str(100)
         )
         print("Car class output: %s" % self.car.drive([-1, 100, 1, 100]))
         print("Hardcoded output: %s" % cmd)
-        assert self.car.drive([-1, 250, 1, 100]) == cmd
+        assert self.car.drive([-1, 100, 1, 100]) == cmd
 
     def test_drive_3(self):
         car_conf = config.vehicle_parser_config('vehicle.ini')
         cmd = (
             'http://' +
-            '/fwd' +
             str(car_conf['car_url']) +
+            '/fwd' +
             '/m' + str(car_conf['speed']) +
             '/st' + str(car_conf['straight'])
         )
         print("Car class output: %s" % self.car.drive([1, 250, 0, 100]))
         print("Hardcoded output: %s" % cmd)
-        assert self.car.drive([1, 250, -1, 100]) == cmd
+        assert self.car.drive([1, 250, 0, 100]) == cmd
 
     def test_drive_4(self):
         car_conf = config.vehicle_parser_config('vehicle.ini')
         cmd = (
             'http://' +
-            '/fwd' +
             str(car_conf['car_url']) +
+            '/fwd' +
             '/m' + str(car_conf['speed']) +
             '/lf' + str(100)
         )

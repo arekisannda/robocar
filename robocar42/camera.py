@@ -1,12 +1,13 @@
+'''This module describes the Camera class which captures the camera feed.'''
+
 import os
 import time
 import subprocess as sp
 from threading import Thread
 
-import cv2
 import numpy as np
 
-import config
+from robocar42 import config
 
 class CameraCore(object):
     '''
@@ -14,22 +15,28 @@ class CameraCore(object):
     '''
     def __init__(self, name, res=(320, 240)):
         self.name = name
-        self.image = np.zeroes(res[1], res[0], 3)
+        self.image = np.zeros((res[1], res[0], 3))
         self.shape = (res[0], res[1], 3)
 
     def get(self):
+        '''
+        Gets frame from camera
+        '''
         return self.image
 
     def update(self):
+        '''
+        Updates frame :3
+        '''
         pass
 
     def start(self):
         '''
         Starts the camera background thread for capturing frames
         '''
-        t = Thread(target=self.update)
-        t.daemon = True
-        t.start()
+        cam_thread = Thread(target=self.update)
+        cam_thread.daemon = True
+        cam_thread.start()
         time.sleep(1)
         return self
 
@@ -38,8 +45,8 @@ class Camera(CameraCore):
     '''
     Camera object class.
     '''
-    def __init__(self, name, conf, res=(320,240), log=False):
-        self.name = name
+    def __init__(self, name, conf, res=(320, 240), log=False):
+        super(Camera, self).__init__(name, res)
         log_name = '%s/%s.log' % (config.log_path, self.name)
         if log:
             self._stderr = open(log_name, 'w')
@@ -48,19 +55,16 @@ class Camera(CameraCore):
         _r, _w = os.pipe()
         self._r = os.fdopen(_r)
         self._w = os.fdopen(_w, 'w')
-        self.shape = (res[0], res[1], 3)
         self.image = None
         self.stopped = False
 
         #setting up camera
         input_url = ("%s://%s:%s@%s/%s" % (
-                conf['cam_protocol'],
-                conf['cam_user'],
-                conf['cam_pass'],
-                conf['cam_url'],
-                conf['cam_channel']
-            )
-        )
+            conf['cam_protocol'],
+            conf['cam_user'],
+            conf['cam_pass'],
+            conf['cam_url'],
+            conf['cam_channel']))
         ffmpeg_cmd = [
             'ffmpeg',
             '-i', input_url,
@@ -101,7 +105,9 @@ class Camera(CameraCore):
                 * self.shape[2]
             )
             image = np.fromstring(raw_image, dtype='uint8')
-            image = image.reshape((self.shape[1], self.shape[0], self.shape[3]))
+            image = image.reshape((self.shape[1],
+                                   self.shape[0],
+                                   self.shape[2]))
             image = np.swapaxes(image, 0, 1)
             self.image = image
             if not self.recording:
