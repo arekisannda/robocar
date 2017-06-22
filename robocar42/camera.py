@@ -1,9 +1,11 @@
 '''This module describes the Camera class which captures the camera feed.'''
 
 import os
+import sys
 import time
 import subprocess as sp
 from threading import Thread
+sys.path.append('..')
 
 import numpy as np
 
@@ -68,6 +70,8 @@ class Camera(CameraCore):
         ffmpeg_cmd = [
             'ffmpeg',
             '-i', input_url,
+            # '-fflags', 'nobuffer',
+            # '-preset', 'ultrafast',
             '-vf', 'fps=15',
             '-f', 'image2pipe',
             '-pix_fmt', 'rgb24',
@@ -114,3 +118,4 @@ class Camera(CameraCore):
                 self._r.close()
                 self.stopped = True
                 break
+

@@ -1,7 +1,7 @@
-import unittest
 import sys
 import os
 from os.path import dirname
+import unittest
 sys.path.append(dirname(dirname(os.path.realpath(__file__))))
 
 from robocar42 import config

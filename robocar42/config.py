@@ -16,7 +16,7 @@ log_path = os.path.join(ROOT_DIR, "logs")
 
 # all paths must exist to project to fully work
 if not os.path.exists(config_path):
-    raise ValidationError("Director: config path does nto exist.")
+    raise ValidationError("Director: config path does not exist.")
 if not os.path.exists(data_path):
     raise ValidationError("Directory: data_sets path does not exist.")
 if not os.path.exists(label_path):
@@ -28,10 +28,10 @@ if not os.path.exists(model_path):
 if not os.path.exists(log_path):
     raise ValidationError("Directory: log path does not exist.")
 
-'''
-Loads configuration file for the program
-'''
 def vehicle_parser_config(config_name):
+    '''
+    Parser for vehicle configuration file
+    '''
     config_file = os.path.join(config_path,config_name)
     config.read(config_file)
     cfg = {}
@@ -45,6 +45,9 @@ def vehicle_parser_config(config_name):
     return cfg
 
 def camera_parser_config(config_name):
+    '''
+    Parser for camera configuration file
+    '''
     config_file = os.path.join(config_path, config_name)
     config.read(config_file)
     cfg = {}
@@ -58,6 +61,9 @@ def camera_parser_config(config_name):
     return cfg
 
 def display_parser_config(config_name):
+    '''
+    Parser for display configuration file
+    '''
     config_file = os.path.join(config_path, config_name)
     config.read(config_file)
     cfg = {}
@@ -70,5 +76,17 @@ def display_parser_config(config_name):
                     image.getint('doshapeY'))
     cfg['sdshape'] = (image.getint('sdshapeX'),
                     image.getint('sdshapeY'))
-    
+    return cfg
+
+def cloud_parser_config(config_name):
+    '''
+    Parser for cloud storage configuration file
+    '''
+    config_file = os.path.join(config_path, config_name)
+    config.read(config_file)
+    cfg = {}
+    cloud = config['cloud']
+    cfg['dataset'] = cloud.get('dataset')
+    cfg['table'] = cloud.get('table')
+    cfg['bucket'] = cloud.get('bucket')
     return cfg

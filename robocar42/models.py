@@ -6,7 +6,6 @@ from keras.preprocessing.image import img_to_array, load_img
 from keras.preprocessing.image import flip_axis, random_shift
 from keras.utils import to_categorical
 
-
 import config
 from camera import Camera
 
