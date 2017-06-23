@@ -85,16 +85,17 @@ def get_ctime(path, filename):
     st = datetime.fromtimestamp(ts).strftime('%Y%m%d-%H%M%S-%f')[:-4]
     return st
 
-def push_to_cloud(set_name):
+def push_to_cloud(set_name, zip_file):
     '''
     Pushes zip data set onto the cloud
     '''
+    zip_bname = basename(zip_file)
     logger.critical("-----push_to_cloud start-----")
     cloud_conf = config.cloud_parser_config('cloud_images.ini')
     client = storage.Client()
     bucket = client.get_bucket(cloud_conf['bucket'])
-    blob = bucket.blob('my-test-file.txt')
-    blob.upload_from_string('this is test content!')
+    folder = 
+
     logger.critical("-----push_to_cloud end----")
 
 def write_to_zip(set_name, zip_info):
@@ -144,6 +145,7 @@ def write_to_zip(set_name, zip_info):
     finally:
         logger.critical("-----zip file stop-----")
         zp.close()
+    return zip_name
 
 def process_set(set_name):
     '''
@@ -238,10 +240,10 @@ def main():
         exit(0)
 
     zip_info = process_set(args.set_name)
-    write_to_zip(args.set_name, zip_info)
+    zip_file = write_to_zip(args.set_name, zip_info)
 
     if args.push:
-        push_to_cloud(args.set_name)
+        push_to_cloud(args.set_name, zip_file)
     logger.debug("Process End")
 
 if __name__ == '__main__':

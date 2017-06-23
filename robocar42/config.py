@@ -89,4 +89,5 @@ def cloud_parser_config(config_name):
     cfg['dataset'] = cloud.get('dataset')
     cfg['table'] = cloud.get('table')
     cfg['bucket'] = cloud.get('bucket')
+    cfg['folder'] = cloud.get('folder')
     return cfg
