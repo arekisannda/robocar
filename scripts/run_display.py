@@ -9,7 +9,6 @@ import time
 import signal
 import argparse
 import atexit
-from threading import Thread
 sys.path.append(dirname(dirname(os.path.realpath(__file__))))
 
 import pygame

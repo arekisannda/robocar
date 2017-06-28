@@ -91,3 +91,22 @@ def cloud_parser_config(config_name):
     cfg['bucket'] = cloud.get('bucket')
     cfg['folder'] = cloud.get('folder')
     return cfg
+
+def drive_parser_config(config_name):
+    '''
+    Parser for drive config
+    '''
+    config_file = os.path.join(config_path, config_name)
+    config.read(config_file)
+    cfg = {}
+    drive = config['drive']
+    cfg['vehicle_conf'] = drive.get('vehicle')
+    cfg['display'] = drive.get('display')
+    cfg['delay'] = drive.getint('delay')
+    cfg['classes'] = drive.getint('classes')
+    cfg['level'] = drive.getfloat('level')
+    cfg['teach'] = drive.getboolean('teach')
+    cameras = drive.get('camera').split(',')
+    cfg['camera'] = [cam.strip() for cam in cameras]
+    return cfg
+

@@ -74,12 +74,14 @@ class Display(object):
         Show current frames only
         '''
         ret_frames = []
+        ret_images = []
         for cam in self.cam_list:
             image = cam.get()
+            ret_images.append(image)
             surface = pygame.Surface(self.disp_conf['oshape'])
             pygame.pixelcopy.array_to_surface(surface, image) 
             ret_frames.append(surface)
-        return ret_frames, None
+        return ret_frames, ret_images, None
 
     def record(self, record_dirs):
         '''
@@ -89,6 +91,7 @@ class Display(object):
             raise DisplayError("Number of directories given does"
                                "not match number of cameras")
         ret_frames = []
+        ret_images = []
         ret_names = []
         self.frame_counter += 1
         for ind in range(len(self.cam_list)):
@@ -96,13 +99,14 @@ class Display(object):
             ret_names.append(filename)
             filename = os.path.join(record_dirs[ind], filename)
             image = self.cam_list[ind].get()
+            ret_images.append(image)
             surface = pygame.Surface(self.disp_conf['oshape'])
             pygame.pixelcopy.array_to_surface(surface, image) 
             ret_frames.append(surface)
             save_thread = Thread(target=self.save, args=(filename, surface))
             self.sv_thread_list.append(save_thread)
             save_thread.start()
-        return ret_frames, ret_names
+        return ret_frames, ret_images, ret_names
 
     def save(self, filename, image):
         '''
