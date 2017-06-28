@@ -94,7 +94,6 @@ def push_to_cloud(set_name, zip_file):
     cloud_conf = config.cloud_parser_config('cloud_images.ini')
     client = storage.Client()
     bucket = client.get_bucket(cloud_conf['bucket'])
-    folder = 
 
     logger.critical("-----push_to_cloud end----")
 

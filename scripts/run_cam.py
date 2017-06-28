@@ -1,5 +1,5 @@
 '''
-This script runs the camera capturing process for viewing.
+This script runs the camera capturing process for viewing test.
 '''
 
 import sys
@@ -17,6 +17,7 @@ import numpy as np
 import pygame
 
 from robocar42 import config
+from robocar42.camera import Camera
 
 def build_parser():
     '''
@@ -33,7 +34,7 @@ def build_parser():
 
 def ctrl_c_handler(signum, frame):
     pygame.quit()
-    pass
+    exit(0)
 
 def cleanup(cams):
     for cam in cams:
@@ -52,7 +53,7 @@ def main():
         rec_folder = "rec_%s" % time.strftime("%d_%m_%Y_%H_%M_")
         rec_folder = os.path.join(config.stream_path, rec_folder)
         rec_dirs = [rec_folder+'/'+str(i) for i in range(2)]
-        for directory in rec_dir:
+        for directory in rec_dirs:
             if not os.path.exists(directory):
                 os.makedirs(directory)
 
@@ -64,7 +65,7 @@ def main():
     atexit.register(cleanup, [cam_1, cam_2])
     pygame.init()
     screen = pygame.display.set_mode(disp_conf['doshape'])
-    surface = [pygame.Surface(disp_conf['oshape']) * 2]
+    surface = [pygame.Surface(disp_conf['oshape']) for i in range(2)]
 
     running = True
     img_ind = 0
@@ -84,9 +85,12 @@ def main():
             file_2_name = 'img_%05d.bmp' % img_ind
             file_1_name = os.path.join(rec_dirs[0], file_1_name)
             file_2_name = os.path.join(rec_dirs[1], file_2_name)
-            pygame.image.save(image_1, file_1_name)
-            pygame.image.save(image_2, file_2_name)
+            pygame.image.save(surface[0], file_1_name)
+            pygame.image.save(surface[1], file_2_name)
             img_ind += 1
     cam_1.stop()
     cam_2.stop()
     pygame.quit()
+
+if __name__ == '__main__':
+    main()

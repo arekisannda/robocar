@@ -19,6 +19,7 @@ class CameraCore(object):
         self.name = name
         self.image = np.zeros((res[1], res[0], 3))
         self.shape = (res[0], res[1], 3)
+        self.cam_thread = None
 
     def get(self):
         '''
@@ -36,9 +37,9 @@ class CameraCore(object):
         '''
         Starts the camera background thread for capturing frames
         '''
-        cam_thread = Thread(target=self.update)
-        cam_thread.daemon = True
-        cam_thread.start()
+        self.cam_thread = Thread(target=self.update)
+        # self.cam_thread.daemon = True
+        self.cam_thread.start()
         time.sleep(1)
         return self
 
@@ -97,6 +98,7 @@ class Camera(CameraCore):
         if self.ffmpeg:
             self.ffmpeg.kill()
         self.recording = False
+        self.cam_thread.join()
 
     def update(self):
         '''
@@ -108,13 +110,14 @@ class Camera(CameraCore):
                 * self.shape[1]
                 * self.shape[2]
             )
-            image = np.fromstring(raw_image, dtype='uint8')
-            image = image.reshape((self.shape[1],
-                                   self.shape[0],
-                                   self.shape[2]))
-            image = np.swapaxes(image, 0, 1)
-            self.image = image
-            if not self.recording:
+            if self.recording:
+                new_image = np.fromstring(raw_image, dtype='uint8')
+                new_image = new_image.reshape((self.shape[1],
+                                               self.shape[0],
+                                               self.shape[2]))
+                new_image = np.swapaxes(new_image, 0, 1)
+                self.image = new_image
+            else:
                 self._r.close()
                 self.stopped = True
                 break
