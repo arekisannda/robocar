@@ -65,7 +65,8 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        surface, filenames = disp.show(args.save, rec_dirs)
+        surface, images, filenames = disp.show(args.save, rec_dirs)
+        print images[0].shape
         screen.blit(surface[0], (0,0))
         screen.blit(surface[1], (disp_conf['oshape'][0],0))
         pygame.display.flip()

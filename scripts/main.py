@@ -94,14 +94,8 @@ def record_data(action, filenames):
     records.append(entry)
 
 def manual_drive(filenames, intent, teach):
-    action = [
-        [1, rc_car.max_speed, 0, rc_car.straight],
-        [1, rc_car.max_speed, -1, rc_car.left],
-        [1, rc_car.max_speed, 1, rc_car.right],
-        [-1, rc_car.max_speed, 0, rc_car.straight],
-        [-1, rc_car.max_speed, -1, rc_car.left],
-        [-1, rc_car.max_speed, 1, rc_car.right]]
-
+    action = [0, rc_car.max_speed, 0, rc_car.straight]
+    
     for act_i in range(len(actions)):
         tmp = actions[act_i]
         if tmp == intent:
