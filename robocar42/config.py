@@ -13,6 +13,7 @@ label_path = os.path.join(ROOT_DIR, "data_labels")
 stream_path = os.path.join(ROOT_DIR, "stream")
 model_path = os.path.join(ROOT_DIR, "models")
 log_path = os.path.join(ROOT_DIR, "logs")
+download_path = os.path.join(ROOT_DIR, "download")
 
 # all paths must exist to project to fully work
 if not os.path.exists(config_path):
@@ -76,6 +77,22 @@ def display_parser_config(config_name):
                     image.getint('doshapeY'))
     cfg['sdshape'] = (image.getint('sdshapeX'),
                     image.getint('sdshapeY'))
+    return cfg
+
+def model_parser_config(config_name):
+    '''
+    Parser for training model configuration file
+    '''
+    config_file = os.path.join(config_path, config_name)
+    config.read(config_file)
+    cfg = {}
+    model = config['model']
+    shape = map(int, model.get('shape').split(','))
+    cfg['shape'] = tuple(shape)
+    cfg['epochs'] = model.getint('epochs')
+    cfg['steps'] = model.getint('steps')
+    cfg['batch'] = model.getint('batch_size')
+    cfg['val_split'] = model.getfloat('val_split')
     return cfg
 
 def cloud_parser_config(config_name):

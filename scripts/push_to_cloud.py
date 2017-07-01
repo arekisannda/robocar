@@ -16,11 +16,11 @@ from collections import deque
 import logging
 sys.path.append(dirname(dirname(os.path.realpath(__file__))))
 
-import cv2
 import numpy as np
 import pandas as pd
 from google.cloud import storage
 
+from robocar42.util import progress_bar
 from robocar42 import config
 
 logger = logging.getLogger(__name__)
@@ -81,7 +81,8 @@ def get_ctime(path, filename):
     Gets the creation time of a file
     '''
     tmp = os.path.join(path, filename)
-    ts = os.path.getctime(tmp)
+    stat_info =  os.stat(tmp)
+    ts = stat_info.st_birthtime
     st = datetime.fromtimestamp(ts).strftime('%Y%m%d-%H%M%S-%f')[:-4]
     return st
 
@@ -91,10 +92,12 @@ def push_to_cloud(set_name, zip_file):
     '''
     zip_bname = basename(zip_file)
     logger.critical("-----push_to_cloud start-----")
-    cloud_conf = config.cloud_parser_config('cloud_images.ini')
+    cloud_conf = config.cloud_parser_config('cloud.ini')
     client = storage.Client()
     bucket = client.get_bucket(cloud_conf['bucket'])
-
+    blob_name = os.path.join(cloud_conf['folder'], zip_bname)
+    blob = bucket.blob(blob_name)
+    blob.upload_from_filename(zip_file)
     logger.critical("-----push_to_cloud end----")
 
 def write_to_zip(set_name, zip_info):
@@ -109,6 +112,8 @@ def write_to_zip(set_name, zip_info):
     try:
         cam_1_bname = os.path.relpath(cam_1_path, config.stream_path)
         cam_2_bname = os.path.relpath(cam_2_path, config.stream_path)
+        cnt = 0
+        progress_bar(cnt, len(entries))
         for entry in entries:
             file_1 = os.path.join(cam_1_path, entry['cam_1'])
             zp.write(
@@ -126,6 +131,8 @@ def write_to_zip(set_name, zip_info):
                 entry['cam_1'],
                 entry['cam_2'])
             )
+            cnt += 1
+            progress_bar(cnt, len(entries))
         df = pd.DataFrame(entries,
             columns=['timestamp',
                      'cam_1',
