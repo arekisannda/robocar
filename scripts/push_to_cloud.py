@@ -82,7 +82,7 @@ def get_ctime(path, filename):
     '''
     tmp = os.path.join(path, filename)
     stat_info =  os.stat(tmp)
-    ts = stat_info.st_birthtime
+    ts = stat_info.st_mtime
     st = datetime.fromtimestamp(ts).strftime('%Y%m%d-%H%M%S-%f')[:-4]
     return st
 
@@ -146,8 +146,12 @@ def write_to_zip(set_name, zip_info):
         csv_file = os.path.join(config.label_path, set_name+'.csv')
         df.to_csv(csv_file, index=False)
         zp.write(csv_file, basename(csv_file))
+        meta_file = set_name+'.meta'
+        zp_meta_name = os.path.join(set_name, meta_file)
+        meta_file = os.path.join(config.stream_path, zp_meta_name)
+        zp.write(meta_file, zp_meta_name)
     except Exception as e:
-        logger.error("ERROR - zip error occued: %s" % str(e))
+        logger.error("ERROR - zip error occured: %s" % str(e))
     finally:
         logger.critical("-----zip file stop-----")
         zp.close()

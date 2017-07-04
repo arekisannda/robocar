@@ -16,18 +16,28 @@ log_path = os.path.join(ROOT_DIR, "logs")
 download_path = os.path.join(ROOT_DIR, "download")
 
 # all paths must exist to project to fully work
+if (not os.path.exists(config_path) or not os.path.exists(data_path) or
+    not os.path.exists(label_path) or not os.path.exists(stream_path) or
+    not os.path.exists(model_path) or not os.path.exists(log_path)):
+    print "Setting up project folders..."
 if not os.path.exists(config_path):
-    raise ValidationError("Director: config path does not exist.")
+    os.makedirs(config_path)
+    # raise ValidationError("Director: config path does not exist.")
 if not os.path.exists(data_path):
-    raise ValidationError("Directory: data_sets path does not exist.")
+    os.makedirs(data_path)
+    # raise ValidationError("Directory: data_sets path does not exist.")
 if not os.path.exists(label_path):
-    raise ValidationError("Directory: data_labels path does not exist.")
+    os.makedirs(label_path)
+    # raise ValidationError("Directory: data_labels path does not exist.")
 if not os.path.exists(stream_path):
-    raise ValidationError("Directory: stream path does not exist.")
+    os.makedirs(stream_path)
+    # raise ValidationError("Directory: stream path does not exist.")
 if not os.path.exists(model_path):
-    raise ValidationError("Directory: model path does not exist.")
+    os.makedirs(model_path)
+    # raise ValidationError("Directory: model path does not exist.")
 if not os.path.exists(log_path):
-    raise ValidationError("Directory: log path does not exist.")
+    os.makedirs(log_path)
+    # raise ValidationError("Directory: log path does not exist.")
 
 def vehicle_parser_config(config_name):
     '''
@@ -107,6 +117,10 @@ def cloud_parser_config(config_name):
     cfg['table'] = cloud.get('table')
     cfg['bucket'] = cloud.get('bucket')
     cfg['folder'] = cloud.get('folder')
+    cfg['datastore'] = cloud.get('datastore')
+    cfg['datastore_namespace'] = cloud.get('datastore_namespace')
+    cfg['datastore_project'] = cloud.get('datastore_project')
+    cfg['datastore_entity'] = cloud.get('datastore_entity')
     return cfg
 
 def drive_parser_config(config_name):
