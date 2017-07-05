@@ -44,11 +44,12 @@ def update_process_queue(meta_file, set_name):
     '''
     Updates dataset processing queue
     '''
+    logger.info("Adding %s onto preprocess queue" % set_name)
     cloud_conf = config.cloud_parser_config('cloud.ini')
     key_val_pairs = parse_meta_file(meta_file)
     client = datastore.Client(
                 namespace=cloud_conf['datastore_namespace'],
-                project=cloud_conf['project'])
+                project=cloud_conf['datastore_project'])
     ds_key = client.key('preprocess')
     ds_entity = datastore.Entity(ds_key)
 
@@ -68,6 +69,7 @@ def download_and_unpack(blob, filename):
     originla files from the staging directory. Adds files onto a database
     for preprocessing step to work with
     '''
+    logger.info("Downloading %s..." % filename)
     local_filename = os.path.join(config.download_path, filename)
     blob.download_to_filename(local_filename)
 
