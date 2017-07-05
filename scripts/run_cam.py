@@ -51,7 +51,7 @@ def main():
 
     if args.save:
         rec_folder = "rec_%s" % time.strftime("%d_%m_%Y_%H_%M_")
-        rec_folder = os.path.join(config.stream_path, rec_folder)
+        rec_folder = os.path.join(config.pre_path, rec_folder)
         rec_dirs = [rec_folder+'/'+str(i) for i in range(2)]
         for directory in rec_dirs:
             if not os.path.exists(directory):

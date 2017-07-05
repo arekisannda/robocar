@@ -110,8 +110,8 @@ def write_to_zip(set_name, zip_info):
     zp = zipfile.ZipFile(zip_name, mode='w')
     logger.critical("-----Creating zip file %s-----" % (zip_name))
     try:
-        cam_1_bname = os.path.relpath(cam_1_path, config.stream_path)
-        cam_2_bname = os.path.relpath(cam_2_path, config.stream_path)
+        cam_1_bname = os.path.relpath(cam_1_path, config.pre_path)
+        cam_2_bname = os.path.relpath(cam_2_path, config.pre_path)
         cnt = 0
         progress_bar(cnt, len(entries))
         for entry in entries:
@@ -143,12 +143,16 @@ def write_to_zip(set_name, zip_info):
         array = np.asarray([set_name for s in range(sLength)])
         name_df = pd.Series(array)
         df.insert(0, 'setname', name_df)
-        csv_file = os.path.join(config.label_path, set_name+'.csv')
+
+        csv_file = set_name+'.csv'
+        zp_csv_name = os.path.join(set_name, csv_file)
+        csv_file = os.path.join(config.pre_path, zp_csv_name)
         df.to_csv(csv_file, index=False)
-        zp.write(csv_file, basename(csv_file))
+        zp.write(csv_file, zp_csv_name)
+
         meta_file = set_name+'.meta'
         zp_meta_name = os.path.join(set_name, meta_file)
-        meta_file = os.path.join(config.stream_path, zp_meta_name)
+        meta_file = os.path.join(config.pre_path, zp_meta_name)
         zp.write(meta_file, zp_meta_name)
     except Exception as e:
         logger.error("ERROR - zip error occured: %s" % str(e))
@@ -161,8 +165,9 @@ def process_set(set_name):
     '''
     Increase data set by labeling the inbetween frames
     '''
-    data_path = os.path.join(config.stream_path, set_name)
-    label_path = os.path.join(config.label_path, set_name+'.csv')
+    data_path = os.path.join(config.pre_path, set_name)
+    label_path = os.path.join(set_name, set_name+'.csv')
+    label_path = os.path.join(config.pre_path, label_path)
 
     cam_1_path = os.path.join(data_path, '1')
     cam_1_files = os.listdir(cam_1_path)
@@ -240,13 +245,19 @@ def main():
     if not args.set_name:
         logger.error("ERROR - Invalid set name")
         exit(0)
-    data_path = os.path.join(config.stream_path, args.set_name)
-    label_path = os.path.join(config.label_path, args.set_name+".csv")
+    data_path = os.path.join(config.pre_path, args.set_name)
+    label_path = os.path.join(args.set_name, args.set_name+'.csv')
+    label_path = os.path.join(config.pre_path, label_path)
+    meta_path = os.path.join(args.set_name, args.set_name+'.meta')
+    meta_path = os.path.join(config.pre_path, label_path)
     if not os.path.exists(data_path):
-        logger.error("ERROR - Unable to find stream set: %s" % args.set_name)
+        logger.error("ERROR - Unable to find preproc. set: %s" % args.set_name)
         exit(0)
     if not os.path.exists(label_path):
         logger.error("ERROR - Unable to find csv file: %s" % args.set_name)
+        exit(0)
+    if not os.path.exists(meta_path):
+        logger.error("ERROR - Unable to find meta file: %s" % args.set_name)
         exit(0)
 
     zip_info = process_set(args.set_name)

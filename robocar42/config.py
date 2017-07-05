@@ -9,15 +9,14 @@ config = configparser.ConfigParser()
 
 config_path = os.path.join(ROOT_DIR, "config")
 data_path = os.path.join(ROOT_DIR, "data_sets")
-label_path = os.path.join(ROOT_DIR, "data_labels")
-stream_path = os.path.join(ROOT_DIR, "stream")
+pre_path = os.path.join(ROOT_DIR, "pre")
 model_path = os.path.join(ROOT_DIR, "models")
 log_path = os.path.join(ROOT_DIR, "logs")
 download_path = os.path.join(ROOT_DIR, "download")
 
 # all paths must exist to project to fully work
 if (not os.path.exists(config_path) or not os.path.exists(data_path) or
-    not os.path.exists(label_path) or not os.path.exists(stream_path) or
+    not os.path.exists(pre_path) or
     not os.path.exists(model_path) or not os.path.exists(log_path)):
     print "Setting up project folders..."
 if not os.path.exists(config_path):
@@ -26,11 +25,8 @@ if not os.path.exists(config_path):
 if not os.path.exists(data_path):
     os.makedirs(data_path)
     # raise ValidationError("Directory: data_sets path does not exist.")
-if not os.path.exists(label_path):
-    os.makedirs(label_path)
-    # raise ValidationError("Directory: data_labels path does not exist.")
-if not os.path.exists(stream_path):
-    os.makedirs(stream_path)
+if not os.path.exists(pre_path):
+    os.makedirs(pre_path)
     # raise ValidationError("Directory: stream path does not exist.")
 if not os.path.exists(model_path):
     os.makedirs(model_path)

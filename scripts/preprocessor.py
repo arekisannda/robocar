@@ -62,7 +62,8 @@ def update_dataset_table(entity):
 
 def preproces_set(set_name)
     filename = os.path.join(config.data_path, set_name)
-    log_filename = os.path.join(config.label_path, set_name+'.csv')
+    label_path = os.path.join(set_name, set_name+'.csv')
+    label_path = os.path.join(config.data_path, label_path)
     if not os.path.exists(filename) or
         return
 

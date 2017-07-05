@@ -85,7 +85,7 @@ def download_and_unpack(blob, filename):
                 zp.extract(name, config.data_path)
                 meta_file = os.path.join(config.data_path, name)
             elif '.csv' in name:
-                zp.extract(name, config.label_path)
+                zp.extract(name, config.data_path)
             count += 1
             progress_bar(count, total)
 
