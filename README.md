@@ -2,40 +2,30 @@
 
 ## TODO:
 - robocar42:
-  * camera.py
-    - init
-    - get
-    - list
-  * car.py
-    - init
-      + steer (left/right)
-      + speed
-      + direction (forward/backward)
-    - drive
+  * camera.py: OK!
+  * car.py: OK!
   * controller.py
     - send_control
     - record_control
-  * train.py
+  * model.py
     - models
-    - train
     - generators
     - split
-  * image.py
-    - init
-      + list
-      + dims
-    - disp
-    - save
   * preprocess.py
     - check_duplicate
     - augment
     - interpolate
   * util.py
     - view_image
-    - quick_label
     - occlusion_map
-    - stitching
-    - error_log
-    - progress_bar
+    - configure_log: OK!
+    - progress_bar: OK!
 - script
-  **** some command line scripts ****
+  * push_to_cloud.py: OK!
+    - takes specified local dataset, interpolate it then push onto gcp bucket
+  * staging.py: OK!
+    - daemon script. polls staging folder for new files and adds them onto the preprocess queue.
+  * preprocessor.py:
+    - daemon script. processes items on the preprocess queue then uploads them onto the gcp bucket
+- test
+  * module test scripts *
