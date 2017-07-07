@@ -33,9 +33,9 @@ def query_list():
     entries = list(ds_query.fetch())
     return entries
 
-def remove_file():
+def remove_dataset():
     '''
-    Removes files from local machines
+    Removes dataset after it has been preprocessed and pushed onto the cloud
     '''
     pass
 
