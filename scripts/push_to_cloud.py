@@ -1,6 +1,6 @@
 '''
 This modules processes a data set and increases it by labeling inbetween
-frames. It also zips the processed data set and pushes it onto the 
+frames. It also zips the processed data set and pushes it onto the
 cloud storage instance.
 '''
 
@@ -138,7 +138,7 @@ def write_to_zip(set_name, zip_info):
                      'cam_1',
                      'cam_2',
                      'action']
-        ) 
+        )
         sLength = len(df['timestamp'])
         array = np.asarray([set_name for s in range(sLength)])
         name_df = pd.Series(array)

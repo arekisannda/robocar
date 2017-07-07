@@ -23,7 +23,7 @@ logger = util.configure_log('preprocessor')
 
 def query_list():
     '''
-    Gets the list of jobs on the preprocess datastore
+    Gets the list of jobs from the preprocess queue
     '''
     cloud_conf = config.cloud_parser_config('cloud.ini')
     client = datastore.Client(
@@ -61,10 +61,13 @@ def update_dataset_table(entity):
             "Warning - %s entry already exists." % entity['set_name'])
 
 def preproces_set(set_name)
-    filename = os.path.join(config.data_path, set_name)
+    '''
+    performs preprocessing on the unprocessed datasets.
+    '''
+    data_path = os.path.join(config.data_path, set_name)
     label_path = os.path.join(set_name, set_name+'.csv')
     label_path = os.path.join(config.data_path, label_path)
-    if not os.path.exists(filename) or
+    if not os.path.exists(data_path) or not os.path.exists(label_path):
         return
 
 def interrupt_handler(signum, frame):

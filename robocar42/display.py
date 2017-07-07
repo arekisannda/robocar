@@ -71,7 +71,8 @@ class Display(object):
 
     def view_only(self):
         '''
-        Show current frames only
+        Show current frames only:
+        returns pygame frames for display, numpy array for inference
         '''
         ret_frames = []
         ret_images = []
@@ -86,6 +87,8 @@ class Display(object):
     def record(self, record_dirs):
         '''
         Record current frames into file
+        returns pygame frames for display, numpy array for inference, and
+        filenames for csv entry
         '''
         if len(record_dirs) != len(self.cam_list):
             raise DisplayError("Number of directories given does"
@@ -101,7 +104,7 @@ class Display(object):
             image = self.cam_list[ind].get()
             ret_images.append(image)
             surface = pygame.Surface(self.disp_conf['oshape'])
-            pygame.pixelcopy.array_to_surface(surface, image) 
+            pygame.pixelcopy.array_to_surface(surface, image)
             ret_frames.append(surface)
             save_thread = Thread(target=self.save, args=(filename, surface))
             self.sv_thread_list.append(save_thread)
