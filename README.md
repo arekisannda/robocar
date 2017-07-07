@@ -27,5 +27,7 @@
     - daemon script. polls staging folder for new files and adds them onto the preprocess queue.
   * preprocessor.py:
     - daemon script. processes items on the preprocess queue then uploads them onto the gcp bucket
+  * train.py:
+  * drive.py:
 - test
   * module test scripts *
