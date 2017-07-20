@@ -10,6 +10,8 @@ import subprocess as sp
 from threading import Thread
 sys.path.append('..')
 
+import pygame
+
 from robocar42 import config
 from robocar42.car import Car
 
@@ -38,3 +40,6 @@ class RCController(objec):
     '''
     def __init__(self, set_name, car, auto=False):
         super(RCController, self).__init__(set_name, car, auto)
+
+    def send_control(self):
+        pass
