@@ -12,7 +12,9 @@ import signal
 sys.path.append(dirname(dirname(os.path.realpath(__file__))))
 
 from google.cloud import storage
-from google.cooud import datastore
+from google.cloud import datastore
+import apache_beam as beam
+from apache_beam.options.pipeline_options import PipelineOptions
 
 from robocar42 import util
 from robocar42.util import progress_bar
@@ -35,7 +37,7 @@ def query_list():
 
 def remove_file():
     '''
-    Removes files from local machines
+    Removes files from local machine
     '''
     pass
 
