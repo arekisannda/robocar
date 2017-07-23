@@ -27,9 +27,15 @@ class CameraCore(object):
         '''
         return self.image
 
+    def stop(self):
+        '''
+        Stops camera
+        '''
+        self.cam_thread.join()
+
     def update(self):
         '''
-        Updates frame :3
+        Updates frame
         '''
         pass
 
@@ -104,21 +110,17 @@ class Camera(CameraCore):
         '''
         Captures the current frame of the camera and save the current frame
         '''
-        while True:
+        while self.recording:
             raw_image = self._r.read(
                 self.shape[0]
                 * self.shape[1]
                 * self.shape[2]
             )
-            if self.recording:
-                new_image = np.fromstring(raw_image, dtype='uint8')
-                new_image = new_image.reshape((self.shape[1],
-                                               self.shape[0],
-                                               self.shape[2]))
-                new_image = np.swapaxes(new_image, 0, 1)
-                self.image = new_image
-            else:
-                self._r.close()
-                self.stopped = True
-                break
-
+            new_image = np.fromstring(raw_image, dtype='uint8')
+            new_image = new_image.reshape((self.shape[1],
+                                           self.shape[0],
+                                           self.shape[2]))
+            new_image = np.swapaxes(new_image, 0, 1)
+            self.image = new_image
+        self._r.close()
+        self.stopped = True
