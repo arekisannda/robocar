@@ -117,6 +117,8 @@ def cloud_parser_config(config_name):
     cfg['datastore_namespace'] = cloud.get('datastore_namespace')
     cfg['datastore_project'] = cloud.get('datastore_project')
     cfg['datastore_entity'] = cloud.get('datastore_entity')
+    cfg['tmp'] = cloud.get('tmp')
+    cfg['staging'] = cloud.get('staging')
     return cfg
 
 def drive_parser_config(config_name):

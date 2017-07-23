@@ -24,7 +24,7 @@ def darken(image):
     '''
     return adjust_gamma(image, .5)
 
-def brighten(image, 2):
+def brighten(imag):
     '''
     Brightens image
     '''
@@ -38,5 +38,5 @@ def flip(image):
 
 def equalize(image):
     img_yuv = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
-    img_yuv[;;0] = cv2.equalizeHist(img_yuv[;;0])
+    img_yuv[::0] = cv2.equalizeHist(img_yuv[::0])
     return cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
