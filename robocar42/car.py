@@ -50,7 +50,7 @@ class Car(object):
                 angle = str(self.right)
         else:
             angle = str(req[3])
-        cmd = 'http://' + self.url + direct + spd + steer + angle
+        cmd = 'http://' + self.url + direct + spd + steer + angle + '/exp' + str(self.exp)
         try:
             urllib2.urlopen(cmd, timeout=2)
             return cmd

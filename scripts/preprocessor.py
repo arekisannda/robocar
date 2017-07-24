@@ -40,6 +40,7 @@ def remove_dataset(set_list):
     '''
     Removes files from local machine
     '''
+    pass
 
 
 def update_dataset_table(entity):
@@ -76,7 +77,7 @@ def preprocess_set(set_list, job_name):
     options.view_as(StandardOptions).runner = 'DataflowRunner'
 
     with beam.Pipeline(options=options) as p:
-        p
+        
 
 def get_working_set(set_list):
     '''
