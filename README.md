@@ -3,12 +3,10 @@
 ## Installation
 
 
-Install dependencies:
-
+Install dependencies:  
 pip install --user -r local_req.txt
 
-Run Demo:
-
+Run Demo:  
 Must be on "robotics" network.
 
 chmod 755 run.sh  
