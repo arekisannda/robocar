@@ -11,7 +11,7 @@ Run Demo:
 
 Must be on "robotics" network.
 
-chmod 755 run.sh
+chmod 755 run.sh  
 ./run.sh
 
 ## TODO:
