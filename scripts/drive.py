@@ -135,4 +135,5 @@ if __name__ == '__main__':
         disp.stop()
         pygame.quit()
     else:
-        logger.error("Unable to reach cameras")
+        logger.error("Error: Unable to reach cameras!\nPlease make sure to check if the car is on and batteries are fully charged.\nTry again.")
+	exit(0)
