@@ -71,7 +71,7 @@ def conv_to_vec(action):
     print req
     return req
 
-def process_image(images):
+def concantenate_image(images):
     '''
     Processes images and return normalized/combined single image
     '''
@@ -88,7 +88,7 @@ def process_image(images):
 def auto_drive(images):
     print "auto drive func"
     if images:
-        prec_image = process_image(images)
+        prec_image = concantenate_image(images)
         pred_act = model.predict(np.array([prec_image]))[0]
         logger.info("Lft: %.2f | Fwd: %.2f | Rht: %.2f | Rev: %.2f" %
             (pred_act[1], pred_act[0], pred_act[2], pred_act[3]))
@@ -119,8 +119,29 @@ def drive(auto):
             pred_act, act_i = auto_drive(images)
             ot = ct
 
+def build_parser():
+    parser = argparse.ArgumentParser(description='Drive')
+    parser.add_argument(
+        '-auto',
+        action='store_true',
+        default=False)
+    parser.add_argument(
+        '-model',
+        type=str,
+        help='Specify model to use for auto drive')
+    return parser
+
+def check_arguments(args):
+    if args.auto and not args.model:
+        return False
+    return True
+
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, ctrl_c_handler)
+    parser = build_parser()
+    args = parser.parse_args()
+    if not check_arguments(args):
+        logger.error("Error: Invalid command line arguments")
     if check_cameras():
         model = models.model(True, model_conf['shape'],
                     NUM_CLASSES,
@@ -131,9 +152,11 @@ if __name__ == '__main__':
         pygame.init()
         screen = pygame.display.set_mode(disp_conf['doshape'])
 
-        drive(True)
+        drive(args.auto)
         disp.stop()
         pygame.quit()
     else:
-        logger.error("Error: Unable to reach cameras!\nPlease make sure to check if the car is on and batteries are fully charged.\nTry again.")
+        logger.error("Error: Unable to reach cameras!"
+            "\nPlease make sure to check if the car is"
+            " on and batteries are fully charged.\nTry again.")
 	exit(0)

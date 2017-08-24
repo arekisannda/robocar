@@ -44,7 +44,7 @@ def model(load, shape, classes_num, tr_model=None):
 
 def get_X_y(data_files):
     '''
-    Read thte csv files and generate X/y pairs.
+    Read the csv files and generate X/y pairs.
     '''
     pass
 
@@ -95,3 +95,4 @@ def train(conf, model, train_name=None):
         epochs=conf['epochs']
     )
     net.save()
+    
