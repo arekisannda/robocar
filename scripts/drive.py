@@ -175,7 +175,7 @@ def build_parser():
         '-train',
         type=str,
         help='Specify name of training image set',
-        default=rec_folder
+        default=gen_default_name()
         )
     return parser
 
