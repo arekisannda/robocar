@@ -145,7 +145,7 @@ if __name__ == '__main__':
     if check_cameras():
         model = models.model(True, model_conf['shape'],
                     NUM_CLASSES,
-                    'models/june_16_2pm.h5')
+                    args.model)
         rc_car.start()
         disp = Display('main', disp_conf, ['camera_1.ini', 'camera_2.ini'])
         atexit.register(cleanup, disp)

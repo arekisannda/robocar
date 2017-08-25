@@ -1,109 +1,180 @@
 '''
-Checks the preprocess queue for jobs.
-Processes jobs(augment/duplicate checks) and push onto bucket
+This script processes the data: increasing the data set size, similarity
+detection, and image augmentation.
 '''
 
 import sys
 import os
+import re
 from os.path import dirname
 from os.path import basename
+import csv
 import time
-import signal
+import argparse
+
+import logging
 sys.path.append(dirname(dirname(os.path.realpath(__file__))))
 
-from google.cloud import storage
-from google.cloud import datastore
-import apache_beam as beam
-from apache_beam.options.pipeline_options import PipelineOptions
+import numpy as np
+import cv2
+import pandas as pd
 
 from robocar42 import util
-from robocar42.util import progress_bar
 from robocar42 import config
 from robocar42 import preprocess
 
-logger = util.configure_log('preprocessor')
-cloud_conf = config.cloud_parser_config('cloud.ini')
+logger = util.configure_log('preprocess')
 
-def query_list():
-    '''
-    Gets the list of jobs from the preprocess queue
-    '''
-    cloud_conf = config.cloud_parser_config('cloud.ini')
-    client = datastore.Client(
-                namespace=cloud_conf['datastore_namespace'],
-                project=cloud_conf['datastore_project'])
-    ds_query = client.query(kind='preprocess')
-    entries = list(ds_query.fetch())
-    return entries
+op_list = [
+    ('darken', preprocess.darken),
+    ('brighten', preprocess.brighten),
+    ('flip', preprocess.flip)
+]
 
-def remove_dataset(set_list):
-    '''
-    Removes files from local machine
-    '''
-    pass
+reverse = [0, 2, 1, 3]
 
-
-def update_dataset_table(entity):
+def build_parser():
     '''
-    Update dataset table
+    Build Parser
     '''
-    cloud_conf = config.cloud_parser_config('cloud.ini')
-    client = datastore.Client(
-                namespace=cloud_conf['datastore_namespace'],
-                project=cloud_conf['datastore_project'])
-    ds_key = client.key('datasets')
-    ds_entity = datastore.Entity(ds_key)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-sim_cutoff',
+        type=float, 
+        help="Image similarity threshold. Default: 0.1",
+        default=0.1)
+    parser.add_argument(
+        '-equalize',
+        action='store_true',
+        default=False,
+        help='Apply equalize histogram on images, Default: False'
+        )
+    parser.add_argument(
+        'set_name',
+        type=str,
+        help="Name of data set"
+    )
+    return parser
 
-    ds_query = client.query(kind='datasets')
-    ds_query.add_filter('set_name', '=', entity['set_name'])
-    if not list(ds_query.fetch()):
-        for key in entity:
-            ds_entity[key] = entity[key]
-        client.put(ds_entity)
-    else:
-        logger.warning(
-            "Warning - %s entry already exists." % entity['set_name'])
-
-def preprocess_set(set_list, job_name):
+def process_image(path, name, command, op_todo):
     '''
-    performs preprocessing on the unprocessed datasets.
+    Perform augmentation operations on images
     '''
-    options = PipelineOptions()
-    google_cloud_options = optinos.view_as(GoogleCloudOptions)
-    google_cloud_options.project = cloud_conf['datastore_project']
-    google_cloud_options.job_name = job_name
-    google_cloud_options.staging_location = cloud_conf['staging']
-    google_cloud_options.temp_location = cloud_conf['tmp']
-    options.view_as(StandardOptions).runner = 'DataflowRunner'
 
-    with beam.Pipeline(options=options) as p:
-        
+    image_paths = [os.path.join(path[i], name[i]) for i in range(len(path))]
+    aug_images = []
+    
+    for ops in op_todo:
+        new_command = command
+        for ind in range(len(image_paths)):
+            img_orig = cv2.imread(image_paths[ind], 1)
+            new_image = img_orig
+            output_prepend = ""
+            for op in ops:
+                output_prepend += op[0]+"_"
+                new_image = op[1](new_image)
+                if op[0] == 'flip':
+                    new_command = reverse[command]
+            cv2.imwrite(
+                filename=os.path.join(path[ind], output_prepend+name[ind]),
+                img=new_image)
+        aug_images.append([
+            output_prepend+name[0],
+            output_prepend+name[1],
+            new_command])
 
-def get_working_set(set_list):
-    '''
-    Generate working set for dataflow pipeline
-    '''
-    ret_set = []
-    for set_item in set_list:
-        set_name = set_item['set_name']
-        data_path = os.path.join(config.data_path, set_name)
-        label_path = os.path.join(set_name, set_name+'.csv')
-        label_path = os.path.join(config.data_path, label_path)
-        if os.path.exists(data_path) or os.path.exists(label_path):
-            ret_set.append(set_name)
-    return ret_set
+    return aug_images
 
-def interrupt_handler(signum, frame):
-    global interrupted
-    interrupted = True
-    logger.info("Exiting program...")
+def augment(set_name, equalize=False):
+    data_path = os.path.join(config.data_path, set_name)
+    label_path = os.path.join(set_name, set_name+'.csv')
+    label_path = os.path.join(config.data_path, label_path)
+
+    cam_1_path = os.path.join(data_path, '1')
+    cam_2_path = os.path.join(data_path, '2')
+
+    op_todo = [
+        ([op_list[0]]),
+        ([op_list[1]]),
+        ([op_list[2]]),
+        ([op_list[0],op_list[2]]),
+        ([op_list[1],op_list[2]])
+    ]
+
+    with open(label_path, 'r') as in_csv:
+        for line in in_csv:
+            if re.search(r"(flip|autocont|equalize|darken|brighten)", line):
+                util.progress_bar(1, 1)
+                return
+
+    #equalize images
+    if equalize:
+        with open(label_path, 'r') as in_csv:
+            reader = csv.reader(in_csv, delimiter=',')
+            attribute = next(reader, None)
+            entries = list(reader)
+            for entry in entries:
+                img_1_path = os.path.join(cam_1_path, entry[0])
+                img_2_path = os.path.join(cam_2_path, entry[1])
+                cam_1_img = preprocess.equalize(cv2.imread(img_1_path))
+                cam_2_img = preprocess.equalize(cv2.imread(img_2_path))
+                cv2.imwrite(filename=img_1_path,img=cam_1_img)
+                cv2.imwrite(filename=img_2_path,img=cam_2_img)
+
+    logger.info("Preprocessing images...")
+    with open(label_path, 'a+') as io_csv:
+        io_csv.seek(0)
+        reader = csv.reader(io_csv, delimiter=',')
+        attribute = next(reader, None)
+        entries = list(reader)
+        cnt_total = len(entries)
+        cnt_iter = 0
+        util.progress_bar(cnt_iter, cnt_total)
+        for entry in entries:
+            logger.debug("working on %s" % str(entry))
+            cnt_iter += 1
+            util.progress_bar(cnt_iter, cnt_total)
+            new_entries = process_image(
+                [cam_1_path, cam_2_path],
+                [entry[0],entry[1]],
+                int(entry[-1]),
+                op_todo)
+            writer = csv.writer(io_csv, delimiter=',')
+            for new_entry in new_entries:
+                writer.writerow(new_entry)
+            time.sleep(0.1)
+
+def main():
+    parser = build_parser()
+    args = parser.parse_args()
+
+    logger.critical("Process Start")
+    if not args.set_name:
+        logger.error("ERROR - Invalid set name")
+        exit(0)
+
+    pre_path = os.path.join(config.pre_path, args.set_name)
+    pre_label_path = os.path.join(args.set_name, args.set_name+'.csv')
+    pre_label_path = os.path.join(config.pre_path, pre_label_path)
+
+    if not os.path.exists(pre_path):
+        logger.error("ERROR - Unable to find preproc. set: %s" % args.set_name)
+        exit(0)
+    if not os.path.exists(pre_label_path):
+        logger.error("ERROR - Unable to find csv file: %s" % args.set_name)
+        exit(0)
+
+    #interpolations step
+    logger.info("Interpolating Images")
+    entries = preprocess.interpolate(args.set_name)
+    #image similarity detection
+    logger.info("Image Similarity Detection")
+    entries = preprocess.similarity_detection(args.set_name, args.sim_cutoff)
+    #image augmentation
+    logger.info("Image Augmentation")
+    augment(args.set_name, args.equalize)
+
+    logger.debug("Process End")
 
 if __name__ == '__main__':
-    signal.signal(signal.SIGINT, interrupt_handler)
-    interrupted = False
-    while not interrupted:
-        job_list = query_list()
-        working_set = get_working_set(job_list)
-        # preprocess_set(working_set, job_name)
-        # remove_dataset(working_set)
-
+    main()
