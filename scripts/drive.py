@@ -186,7 +186,7 @@ def check_arguments(args):
 
 def check_set_name(rec_folder):
     rec_dirs = [rec_folder+'/'+str(i) for i in range(2)]
-    for directory in rec_dir:
+    for directory in rec_dirs:
         if os.path.exists(directory):
             return False
     return True
