@@ -202,7 +202,6 @@ if __name__ == '__main__':
     rec_folder = os.path.join(config.pre_path, args.train)
     if not check_set_name(rec_folder):
         logger.error("Error: Invalid setname. Name is unavailable.")
-    rec_folder = os.path.join.join(config)
     rec_dirs = [rec_folder+'/'+str(i) for i in range(2)]
     for directory in rec_dirs:
         os.makedirs(directory) 
