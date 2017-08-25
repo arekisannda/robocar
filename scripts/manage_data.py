@@ -9,9 +9,12 @@ from os.path import dirname
 from os.path import basename
 import csv
 import argparse
+import shutil
 
 import logging
 sys.path.append(dirname(dirname(os.path.realpath(__file__))))
+
+import pandas as pd
 
 from robocar42 import util
 from robocar42 import config

@@ -35,6 +35,7 @@ cam_2 = config.camera_parser_config('camera_2.ini')
 model_conf = config.model_parser_config('model_1.ini')
 
 links = ['/fwd', '/fwd/lf', '/fwd/rt', '/rev', '/rev/lf', '/rev/rt', '']
+actions = [pygame.K_UP,pygame.K_LEFT,pygame.K_RIGHT,pygame.K_DOWN]
 rev_action = 3
 
 def check_cameras():
@@ -98,9 +99,16 @@ def auto_drive(images):
             rc_car.drive(conv_to_vec(links[act_i]))
     else:
         logger.error("Error: no images for prediction")
-    return None, None
 
-def drive(auto):
+def manual_drive(intent):
+    for act_i in range(len(actions)):
+        tmp = actions[act_i]
+        if tmp==intent:
+            logging.debug("acting out %d" % tmp)
+            rc_car.drive(conv_to_vec(links[act_i]))
+            return
+
+def drive(auto, rec_dirs=None, teach=False):
     ot = 0
     running = True
     while running:
@@ -109,26 +117,66 @@ def drive(auto):
                 running = False
         ct = time.time()
         drive = True if (ct - ot) * 1000 > rc_car.exp + delta_time else drive
-        surface, images, filenames = disp.show()
+        surface, images, filenames = disp.show((rec_dirs), rec_dirs)
         screen.blit(surface[0], (0,0))
         screen.blit(surface[1], (disp_conf['oshape'][0],0))
         pygame.display.flip()
+        keys = pygame.key.get_pressed()
+        for act_i in range(len(actions)):
+            tmp = actions[act_i]
+            if keys[tmp]:
+                logging.debug("Key pressed %d" % tmp)
+                intent=tmp
+        if keys[pygame.K_ESCAPE] or keys[pygame.K_q] or \
+            pygame.event.peek(pygame.QUIT):
+            logging.debug("Exit pressed")
+            return
+        if drive and not auto:
+            logging.debug("Manual Drive")
+            drive = False
+            manual_drive(intent)
+            intent = 0
+            ot = ct
+        if keys[pygame.K_a]:
+            auto = True
+            logging.info("Autopilot mode on!")
+        if keys[pygame.K_s]:
+            auto = False
+            logging.info("Autopilot mode off!")
+        keys = []
+        pygame.event.pump()
         if images and auto and drive:
             logger.debug("Auto drive")
             drive = False
-            pred_act, act_i = auto_drive(images)
+            auto_drive(images)
             ot = ct
+
+def gen_default_name():
+    rec_folder = "rec_%s" % time.strftime("%d_%m_%H_%M")
+    return rec_folder
 
 def build_parser():
     parser = argparse.ArgumentParser(description='Drive')
     parser.add_argument(
         '-auto',
         action='store_true',
-        default=False)
+        default=False,
+        help='Auto on/off. Default: off')
+    parser.add_argument(
+        '-teach',
+        action='store_true',
+        default=False,
+        help='Teach on/off. Default: off')
     parser.add_argument(
         '-model',
         type=str,
         help='Specify model to use for auto drive')
+    parser.add_argument(
+        '-train',
+        type=str,
+        help='Specify name of training image set',
+        default=rec_folder
+        )
     return parser
 
 def check_arguments(args):
@@ -136,12 +184,29 @@ def check_arguments(args):
         return False
     return True
 
+def check_set_name(rec_folder):
+    rec_dirs = [rec_folder+'/'+str(i) for i in range(2)]
+    for directory in rec_dir:
+        if os.path.exists(directory):
+            return False
+    return True
+
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, ctrl_c_handler)
     parser = build_parser()
     args = parser.parse_args()
+
     if not check_arguments(args):
         logger.error("Error: Invalid command line arguments")
+
+    rec_folder = os.path.join(config.pre_path, args.train)
+    if not check_set_name(rec_folder):
+        logger.error("Error: Invalid setname. Name is unavailable.")
+    rec_folder = os.path.join.join(config)
+    rec_dirs = [rec_folder+'/'+str(i) for i in range(2)]
+    for directory in rec_dirs:
+        os.makedirs(directory) 
+
     if check_cameras():
         model = models.model(True, model_conf['shape'],
                     NUM_CLASSES,
@@ -152,7 +217,7 @@ if __name__ == '__main__':
         pygame.init()
         screen = pygame.display.set_mode(disp_conf['doshape'])
 
-        drive(args.auto)
+        drive(args.auto, rec_dirs)
         disp.stop()
         pygame.quit()
     else:

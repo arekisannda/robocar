@@ -210,5 +210,5 @@ def similarity_detection(set_name, cutoff=0.0):
                      'action']
          )
          df.to_csv(label_path, index=False)
-         logger.info("Duplicates detected: %d" % count)
+         logger.info("\nDuplicates detected: %d" % count)
     return entries
