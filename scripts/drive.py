@@ -132,11 +132,7 @@ def drive(auto, set_name, rec_dirs=None, teach=False):
                     running = False
             ct = time.time()
             drive = True if (ct - ot) * 1000 > rc_car.exp + delta_time else drive
-            if drive:
-                surface, images, filenames = disp.show((rec_dirs), rec_dirs)
-                img_ot = ct
-            else:
-                surface, images, filenames = disp.show()
+            surface, images, filenames = disp.show((rec_dirs), rec_dirs)
             screen.blit(surface[0], (0,0))
             screen.blit(surface[1], (disp_conf['oshape'][0],0))
             pygame.display.flip()
