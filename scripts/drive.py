@@ -9,6 +9,7 @@ from os.path import basename
 import time
 import argparse
 import atexit
+import csv
 import signal
 import logging
 sys.path.append(dirname(dirname(os.path.realpath(__file__))))
@@ -36,6 +37,7 @@ model_conf = config.model_parser_config('model_1.ini')
 
 links = ['/fwd', '/fwd/lf', '/fwd/rt', '/rev', '/rev/lf', '/rev/rt', '']
 actions = [pygame.K_UP,pygame.K_LEFT,pygame.K_RIGHT,pygame.K_DOWN]
+attributes=['cam_1', 'cam_2', 'action']
 rev_action = 3
 
 def check_cameras():
@@ -69,7 +71,6 @@ def conv_to_vec(action):
     elif '/rt' in action: req[2] = 1
     else: req[2] = 0
     req[3] = -1
-    print req
     return req
 
 def concantenate_image(images):
@@ -96,60 +97,93 @@ def auto_drive(images):
         act_i = np.argmax(pred_act)
         action = act_i if (pred_act[act_i] >= conf_level) else rev_action
         if act_i < len(links):
-            rc_car.drive(conv_to_vec(links[act_i]))
+            rc_car.drive(conv_to_vec(links[action]))
+        return action, True
     else:
         logger.error("Error: no images for prediction")
+        return None, False
 
-def manual_drive(intent):
+def manual_drive(intent, teach=False):
     for act_i in range(len(actions)):
         tmp = actions[act_i]
         if tmp==intent:
             logging.debug("acting out %d" % tmp)
-            rc_car.drive(conv_to_vec(links[act_i]))
-            return
+            if not teach:
+                rc_car.drive(conv_to_vec(links[act_i]))
+            return act_i, True
+    return None, False
 
-def drive(auto, rec_dirs=None, teach=False):
+def drive(auto, set_name, rec_dirs=None, teach=False):
     ot = 0
+    img_ot = 0
     running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-        ct = time.time()
-        drive = True if (ct - ot) * 1000 > rc_car.exp + delta_time else drive
-        surface, images, filenames = disp.show((rec_dirs), rec_dirs)
-        screen.blit(surface[0], (0,0))
-        screen.blit(surface[1], (disp_conf['oshape'][0],0))
-        pygame.display.flip()
-        keys = pygame.key.get_pressed()
-        for act_i in range(len(actions)):
-            tmp = actions[act_i]
-            if keys[tmp]:
-                logging.debug("Key pressed %d" % tmp)
-                intent=tmp
-        if keys[pygame.K_ESCAPE] or keys[pygame.K_q] or \
-            pygame.event.peek(pygame.QUIT):
-            logging.debug("Exit pressed")
-            return
-        if drive and not auto:
-            logging.debug("Manual Drive")
-            drive = False
-            manual_drive(intent)
-            intent = 0
-            ot = ct
-        if keys[pygame.K_a]:
-            auto = True
-            logging.info("Autopilot mode on!")
-        if keys[pygame.K_s]:
-            auto = False
-            logging.info("Autopilot mode off!")
-        keys = []
-        pygame.event.pump()
-        if images and auto and drive:
-            logger.debug("Auto drive")
-            drive = False
-            auto_drive(images)
-            ot = ct
+
+    intent = 0
+    label_path = os.path.join(set_name, set_name+'.csv')
+    label_path = os.path.join(config.pre_path, label_path)
+
+    with open(label_path, 'w') as csv_file:
+        entry = None
+        csv_writer = csv.writer(csv_file, delimiter=',')
+        csv_writer.writerow(attributes)
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+            ct = time.time()
+            drive = True if (ct - ot) * 1000 > rc_car.exp + delta_time else drive
+            if drive:
+                surface, images, filenames = disp.show((rec_dirs), rec_dirs)
+                img_ot = ct
+            else:
+                surface, images, filenames = disp.show()
+            screen.blit(surface[0], (0,0))
+            screen.blit(surface[1], (disp_conf['oshape'][0],0))
+            pygame.display.flip()
+            keys = pygame.key.get_pressed()
+            for act_i in range(len(actions)):
+                tmp = actions[act_i]
+                if keys[tmp]:
+                    logging.debug("Key pressed %d" % tmp)
+                    intent = tmp
+            if keys[pygame.K_ESCAPE] or keys[pygame.K_q] or \
+                pygame.event.peek(pygame.QUIT):
+                logging.debug("Exit pressed")
+                return
+            if drive and not auto:
+                logging.debug("Manual Drive")
+                drive = False
+                car_act, flag = manual_drive(intent, teach)
+                if flag:
+                    entry = [
+                        filenames[0],
+                        filenames[1],
+                        car_act
+                    ]
+                intent = 0
+                ot = ct
+            if keys[pygame.K_a]:
+                auto = True
+                logging.info("Autopilot mode on!")
+            if keys[pygame.K_s]:
+                auto = False
+                logging.info("Autopilot mode off!")
+            keys = []
+            pygame.event.pump()
+            if images and auto and drive:
+                logger.debug("Auto drive")
+                drive = False
+                cat_act, flag = auto_drive(images)
+                ot = ct
+                if flag:
+                    entry = [
+                        filenames[0],
+                        filenames[1],
+                        car_act
+                    ]
+            if entry:
+                csv_writer.writerow(entry)
+                entry = None
 
 def gen_default_name():
     rec_folder = "rec_%s" % time.strftime("%d_%m_%H_%M")
@@ -199,14 +233,15 @@ if __name__ == '__main__':
     if not check_arguments(args):
         logger.error("Error: Invalid command line arguments")
 
-    rec_folder = os.path.join(config.pre_path, args.train)
-    if not check_set_name(rec_folder):
-        logger.error("Error: Invalid setname. Name is unavailable.")
-    rec_dirs = [rec_folder+'/'+str(i) for i in range(2)]
-    for directory in rec_dirs:
-        os.makedirs(directory) 
-
     if check_cameras():
+        rec_folder = os.path.join(config.pre_path, args.train)
+        if not check_set_name(rec_folder):
+            logger.error("Error: Invalid setname. Name is unavailable.")
+        rec_dirs = [rec_folder+'/'+str(i+1) for i in range(2)]
+        for directory in rec_dirs:
+            print directory
+            os.makedirs(directory) 
+
         model = models.model(True, model_conf['shape'],
                     NUM_CLASSES,
                     args.model)
@@ -216,7 +251,7 @@ if __name__ == '__main__':
         pygame.init()
         screen = pygame.display.set_mode(disp_conf['doshape'])
 
-        drive(args.auto, rec_dirs)
+        drive(args.auto, args.train, rec_dirs, args.teach)
         disp.stop()
         pygame.quit()
     else:
